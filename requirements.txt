@@ -1,0 +1,30 @@
+# =============================================================================
+# Raspberry Pi runtime dependencies
+# Install these ON the Raspberry Pi:  pip install -r requirements.txt
+# =============================================================================
+
+# GPIO & hardware control
+RPi.GPIO>=0.7.0
+gpiozero>=2.0
+
+# Camera (Raspberry Pi OS Bullseye / Bookworm)
+picamera2>=0.3.19
+
+# Communication buses
+smbus2>=0.4.3       # I2C
+spidev>=3.6         # SPI
+pyserial>=3.5       # UART / serial
+
+# Networking / IoT protocols
+paho-mqtt>=2.0.0
+requests>=2.31.0
+
+# Adafruit hardware support (CircuitPython-compatible libraries)
+adafruit-blinka>=8.31.0
+adafruit-circuitpython-busdevice>=5.2.9
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Image processing (optional, comment out if not needed)
+Pillow>=10.0.0

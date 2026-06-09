@@ -1,0 +1,32 @@
+# =============================================================================
+# Development dependencies — install on your laptop / desktop
+# pip install -r requirements-dev.txt
+#
+# NOTE: GPIO libraries (RPi.GPIO, gpiozero, picamera2, spidev, smbus2) are
+# NOT included here because they require Raspberry Pi hardware or kernel
+# modules.  Use the mock helpers in projects/template/mock_gpio.py when
+# writing unit tests on a non-Pi machine.
+# =============================================================================
+
+# Networking / IoT (cross-platform)
+paho-mqtt>=2.0.0
+requests>=2.31.0
+pyserial>=3.5
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+
+# Remote access helpers
+paramiko>=3.4.0     # SSH from Python
+scp>=0.14.5         # SCP transfers
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=5.0.0
+pytest-mock>=3.14.0
+
+# Code quality
+black>=24.0.0
+flake8>=7.0.0
+pylint>=3.0.0
+mypy>=1.9.0
+isort>=5.13.0
