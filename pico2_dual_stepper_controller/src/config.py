@@ -20,37 +20,39 @@ STEPPERS = {
 }
 
 SWITCHES = {
-    "switch_1": {
+    "switch_11_stop_go": {
         "pin": 10,
-        "mode": "endstop",
-        "motor": "motor_a",
-        "direction": -1,
+        "mode": "run_enable",
+        "active_low": True,
     },
-    "switch_2": {
+    "switch_12_manual_index": {
         "pin": 11,
+        "mode": "manual_index",
+        "active_low": True,
+    },
+    "switch_13_negative_endstop": {
+        "pin": 12,
+        "mode": "endstop",
+        "motor": "motor_a",
+        "direction": -1,
+        "active_low": True,
+    },
+    "switch_14_positive_endstop": {
+        "pin": 13,
         "mode": "endstop",
         "motor": "motor_a",
         "direction": 1,
-    },
-    "switch_3": {
-        "pin": 12,
-        "mode": "jog",
-        "motor": "motor_b",
-        "direction": 1,
-    },
-    "switch_4": {
-        "pin": 13,
-        "mode": "jog",
-        "motor": "motor_b",
-        "direction": -1,
+        "active_low": True,
     },
 }
 
 MACHINE = {
     "carriage_axis": "motor_a",
     "chuck_axis": "motor_b",
-    "carriage_negative_endstop": "switch_1",
-    "carriage_positive_endstop": "switch_2",
+    "carriage_negative_endstop": "switch_13_negative_endstop",
+    "carriage_positive_endstop": "switch_14_positive_endstop",
+    "run_enable_switch": "switch_11_stop_go",
+    "manual_index_switch": "switch_12_manual_index",
     "carriage_run_steps_per_second": 450,
     "carriage_start_direction": 1,
     "carriage_auto_start": False,
@@ -65,4 +67,5 @@ STEP_PULSE_US = 20
 SWITCH_DEBOUNCE_MS = 25
 ENABLE_ACTIVE_LOW = True
 MAIN_LOOP_IDLE_US = 100
+MAX_CONTROL_DT_US = 50000
 SERIAL_READ_CHUNK = 32
