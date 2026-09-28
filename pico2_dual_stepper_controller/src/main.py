@@ -281,8 +281,6 @@ class ShuttleController:
                 raise ValueError("run-enable switch is in Stop")
             if self.run_fault_latched:
                 raise ValueError("cycle the run-enable switch through Stop to clear the fault")
-            if not self.run_switch_armed:
-                raise ValueError("cycle the run-enable switch through Stop before starting")
         if self.negative_endstop.pressed and self.positive_endstop.pressed:
             self.auto_enabled = False
             self.run_switch_armed = False
