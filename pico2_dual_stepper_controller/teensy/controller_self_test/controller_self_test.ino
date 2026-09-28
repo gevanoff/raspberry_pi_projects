@@ -132,6 +132,20 @@ void testAxisAccelerationAndBraking() {
         "axis accelerates while stepping and brakes near target");
 }
 
+void testFractionalAccelerationProgress() {
+  FakeHardware hardware;
+  StepDirStepper stepper(hardware, 20);
+  stepper.begin();
+  AxisController axis("test", stepper, 450, 650, 1200, 50000);
+  axis.setSerialRate(450);
+  for (int i = 0; i < 9; ++i) {
+    hardware.advance(100);
+    axis.update(hardware.nowMicros(), 100);
+  }
+  check(axis.rampedRate() > 1.0 && stepper.currentRate() >= 1,
+        "fractional acceleration accumulates across fast loop iterations");
+}
+
 void testQueuedMovesAndExactStop() {
   FakeHardware hardware;
   StepDirStepper stepper(hardware, 20);
@@ -220,7 +234,7 @@ struct ShuttleFixture {
   DebouncedSwitch run{25, SwitchMode::kRunEnable};
   DebouncedSwitch manual{25, SwitchMode::kManualIndex};
   ShuttleController shuttle{carriage, chuck, negative, positive, run, manual,
-                            450, 120, 220, 1};
+                            450, 1, 120, 220, 1};
 
   void reset(bool run_pressed = false, bool negative_pressed = false,
              bool positive_pressed = false) {
@@ -238,6 +252,33 @@ struct ShuttleFixture {
     run.update(pressed, 25);
   }
 };
+
+void testConfiguredNegativeStartDirection() {
+  FakeHardware carriage_hardware;
+  FakeHardware chuck_hardware;
+  StepDirStepper carriage_stepper(carriage_hardware, 20);
+  StepDirStepper chuck_stepper(chuck_hardware, 20);
+  carriage_stepper.begin();
+  chuck_stepper.begin();
+  AxisController carriage("motor_a", carriage_stepper, 450, 650, 1200, 50000);
+  AxisController chuck("motor_b", chuck_stepper, 180, 500, 1500, 50000);
+  DebouncedSwitch negative(25, SwitchMode::kEndstop);
+  DebouncedSwitch positive(25, SwitchMode::kEndstop);
+  DebouncedSwitch run(25, SwitchMode::kRunEnable);
+  DebouncedSwitch manual(25, SwitchMode::kManualIndex);
+  negative.reset(false, 0);
+  positive.reset(false, 0);
+  run.reset(false, 0);
+  manual.reset(false, 0);
+  ShuttleController shuttle(carriage, chuck, negative, positive, run, manual,
+                            450, -1, 120, 220, 1);
+  shuttle.resetFromInputs();
+  run.update(true, 0);
+  run.update(true, 25);
+  shuttle.service();
+  check(shuttle.currentDirection() == -1 && carriage.externalRate() == -450,
+        "configured negative carriage start direction is applied");
+}
 
 void testRunSwitchInterlock() {
   ShuttleFixture fixture;
@@ -328,10 +369,12 @@ void runTests() {
   testLongStallSkipsCatchUpBurst();
   testMicrosWrap();
   testAxisAccelerationAndBraking();
+  testFractionalAccelerationProgress();
   testQueuedMovesAndExactStop();
   testLimitImmediateStop();
   testDirectionChangeStopsFirst();
   testAsymmetricDebounce();
+  testConfiguredNegativeStartDirection();
   testRunSwitchInterlock();
   testGoAtBootFaults();
   testContradictoryEndstopsFault();
