@@ -122,7 +122,8 @@ ShuttleController shuttle(
     motor_a, motor_b, negative_endstop.state(), positive_endstop.state(),
     stop_go.state(), manual_index.state(),
     controller_config::kCarriageRunStepsPerSecond,
-    controller_config::kChuckIndexSteps, controller_config::kChuckIndexRate,
+    controller_config::kCarriageStartDirection, controller_config::kChuckIndexSteps,
+    controller_config::kChuckIndexRate,
     controller_config::kChuckIndexDirection);
 
 char command_buffer[controller_config::kMaximumCommandLength + 1] = {};
