@@ -490,6 +490,20 @@ class InputAndShuttleTests(unittest.TestCase):
         shuttle.service()
         self.assertEqual([(120, 220)], chuck.queued_moves)
 
+    def test_physical_jog_is_suppressed_when_run_enable_is_stopped(self):
+        run_enable = SwitchStub(False, False)
+        shuttle, _carriage, _chuck = self._build_shuttle(
+            SwitchStub(False), SwitchStub(False), run_enable=run_enable
+        )
+
+        self.assertEqual(0, controller.gate_physical_jog(1, shuttle))
+        self.assertEqual(0, controller.gate_physical_jog(-1, shuttle))
+
+        run_enable.pressed = True
+        shuttle.run_fault_latched = False
+        self.assertEqual(1, controller.gate_physical_jog(1, shuttle))
+        self.assertEqual(-1, controller.gate_physical_jog(-1, shuttle))
+
     def test_manual_index_is_ignored_while_run_switch_is_stopped(self):
         run_enable = SwitchStub(False, False)
         manual_index = SwitchStub(True, True)
