@@ -89,6 +89,8 @@ static_assert(kMotorB.default_steps_per_second > 0 &&
 static_assert(kCarriageRunStepsPerSecond > 0 &&
                   kCarriageRunStepsPerSecond <= kMotorA.maximum_steps_per_second,
               "carriage rate must be within the motor A limit");
+static_assert(kCarriageStartDirection == 1 || kCarriageStartDirection == -1,
+              "carriage start direction must be +1 or -1");
 static_assert(kChuckIndexRate > 0 && kChuckIndexRate <= kMotorB.maximum_steps_per_second,
               "chuck index rate must be within the motor B limit");
 static_assert(kMotorA.acceleration_steps_per_second_squared > 0 &&
