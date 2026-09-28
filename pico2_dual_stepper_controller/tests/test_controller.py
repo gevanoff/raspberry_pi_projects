@@ -176,6 +176,26 @@ class StepperTests(unittest.TestCase):
         FAKE_TIME.advance_us(1)
         self.assertEqual(1, motor.update())
 
+    def test_fast_loop_preserves_fractional_acceleration(self):
+        motor = stepper.StepDirStepper(2, 3, 4, pulse_width_us=20)
+        axis = controller.AxisController(
+            "test",
+            motor,
+            {
+                "default_steps_per_second": 100,
+                "max_steps_per_second": 100,
+                "acceleration_steps_per_second_squared": 1200,
+            },
+        )
+        axis.set_serial_rate(100)
+
+        for _ in range(9):
+            FAKE_TIME.advance_us(100)
+            axis.update(FAKE_TIME.ticks_us(), 100)
+
+        self.assertGreater(axis.ramped_rate, 1.0)
+        self.assertGreaterEqual(motor.current_rate, 1)
+
     def test_axis_emits_steps_before_acceleration_finishes(self):
         motor = stepper.StepDirStepper(2, 3, 4, pulse_width_us=20)
         axis = controller.AxisController(
