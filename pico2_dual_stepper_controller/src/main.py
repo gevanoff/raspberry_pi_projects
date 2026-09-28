@@ -197,7 +197,10 @@ class AxisController:
         else:
             self.ramped_rate = float(ramp_target_rate)
 
-        if abs(self.ramped_rate) < 0.5:
+        # Preserve sub-step/s acceleration while ramping away from rest.
+        # Snapping every fractional value to zero can permanently stall a fast
+        # control loop whose per-iteration acceleration increment is < 0.5.
+        if ramp_target_rate == 0 and abs(self.ramped_rate) < 0.5:
             self.ramped_rate = 0.0
 
         self.stepper.set_rate(int(round(self.ramped_rate)))
