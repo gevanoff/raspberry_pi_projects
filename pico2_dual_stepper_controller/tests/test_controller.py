@@ -458,16 +458,12 @@ class InputAndShuttleTests(unittest.TestCase):
         self.assertFalse(shuttle.run_fault_latched)
         self.assertEqual("run_switch_stop", shuttle.last_reversal_source)
 
-    def test_run_switch_go_edge_starts_only_after_stop_cycle(self):
-        run_enable = SwitchStub(True, False)
+    def test_run_switch_go_edge_starts_after_stop_cycle(self):
+        run_enable = SwitchStub(False, False)
         shuttle, carriage, chuck = self._build_shuttle(
             SwitchStub(False), SwitchStub(False), run_enable
         )
-        shuttle.run_switch_armed = False
-        with self.assertRaisesRegex(ValueError, "cycle the run-enable"):
-            shuttle.start()
 
-        run_enable.pressed = False
         shuttle.service()
         self.assertTrue(shuttle.run_switch_armed)
         run_enable.pressed = True
@@ -475,6 +471,22 @@ class InputAndShuttleTests(unittest.TestCase):
         shuttle.service()
         self.assertTrue(shuttle.auto_enabled)
         self.assertFalse(shuttle.run_switch_armed)
+        self.assertEqual(450, carriage.external_rate)
+
+    def test_explicit_pause_start_resumes_while_run_enable_remains_go(self):
+        run_enable = SwitchStub(True, False)
+        shuttle, carriage, _chuck = self._build_shuttle(
+            SwitchStub(False), SwitchStub(False), run_enable
+        )
+        shuttle.start()
+        self.assertTrue(shuttle.auto_enabled)
+        self.assertFalse(shuttle.run_switch_armed)
+
+        shuttle.pause()
+        self.assertFalse(shuttle.auto_enabled)
+        shuttle.start()
+
+        self.assertTrue(shuttle.auto_enabled)
         self.assertEqual(450, carriage.external_rate)
 
     def test_run_switch_already_in_go_at_boot_is_fault_latched(self):
