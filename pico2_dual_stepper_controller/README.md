@@ -90,7 +90,13 @@ Finite moves use acceleration and braking ramps. Chuck index requests are queued
 
 ## Serial control
 
-The board also exposes a USB serial command interface. Once the Pico is running and enumerated as a serial port, start the dedicated controller console:
+The host console uses `pyserial`. Install the declared host dependency once:
+
+```powershell
+py -m pip install -r requirements-host.txt
+```
+
+The board also exposes a USB serial command interface. Once the Pico or Teensy is running and enumerated as a serial port, start the dedicated controller console:
 
 ```powershell
 ./tools/controller_console.ps1
@@ -276,6 +282,12 @@ If your drivers require inverted direction logic, flip `direction_high_is_forwar
 `MAX_CONTROL_DT_US` caps how much acceleration can be applied after a delayed main-loop iteration, preventing a serial or runtime stall from turning into a large rate jump.
 
 ## Regression tests
+
+Install the host dependencies before running the Python console tests:
+
+```powershell
+py -m pip install -r requirements-host.txt
+```
 
 The tests use mocked GPIO and MicroPython timing, so they can run without a connected Pico:
 
