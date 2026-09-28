@@ -774,6 +774,12 @@ def build_switches():
     return switches
 
 
+def gate_physical_jog(jog_direction, shuttle):
+    if jog_direction != 0 and not shuttle._run_allows_motion():
+        return 0
+    return jog_direction
+
+
 def collect_axis_inputs(axis_name, switches):
     jog_direction = 0
     negative_limit_active = False
@@ -836,6 +842,7 @@ def main():
                 jog_direction, negative_limit_active, positive_limit_active = collect_axis_inputs(
                     axis_name, switches
                 )
+                jog_direction = gate_physical_jog(jog_direction, shuttle)
                 axis.update(
                     time.ticks_us(),
                     dt_us,
