@@ -5,8 +5,24 @@ import argparse
 import sys
 import time
 
-import serial
-from serial.tools import list_ports
+try:
+    import serial
+    from serial.tools import list_ports
+except ModuleNotFoundError:
+    serial = None
+
+    class _UnavailableListPorts:
+        @staticmethod
+        def comports():
+            raise RuntimeError(
+                "pyserial is required for serial-port discovery; "
+                "install host dependencies with: py -m pip install -r requirements-host.txt"
+            )
+
+    list_ports = _UnavailableListPorts()
+
+
+_SERIAL_EXCEPTIONS = (OSError,) if serial is None else (OSError, serial.SerialException)
 
 
 SUPPORTED_USB_VENDOR_IDS = {
@@ -35,6 +51,11 @@ def find_controller_port(explicit_port=None):
 
 
 def open_controller(port_name, baud_rate):
+    if serial is None:
+        raise RuntimeError(
+            "pyserial is required for the controller console; "
+            "install host dependencies with: py -m pip install -r requirements-host.txt"
+        )
     connection = serial.Serial()
     connection.port = port_name
     connection.baudrate = baud_rate
@@ -84,7 +105,7 @@ def stop_safely(connection):
         response = send_command(connection, "stop")
         if response:
             print(response)
-    except (OSError, serial.SerialException):
+    except _SERIAL_EXCEPTIONS:
         pass
 
 
@@ -149,7 +170,7 @@ def main(argv=None):
                 print(response)
             else:
                 print("No response from controller.")
-    except (OSError, RuntimeError, serial.SerialException) as exc:
+    except _SERIAL_EXCEPTIONS + (RuntimeError,) as exc:
         print("Controller console error: {message}".format(message=exc), file=sys.stderr)
         exit_code = 1
     finally:
