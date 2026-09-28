@@ -288,13 +288,18 @@ void testRunSwitchInterlock() {
   fixture.shuttle.service();
   const bool started = fixture.shuttle.autoEnabled() &&
                        fixture.carriage.externalRate() == 450;
+  fixture.shuttle.pause();
+  const bool paused = !fixture.shuttle.autoEnabled();
+  const bool resumed = fixture.shuttle.start() == nullptr &&
+                       fixture.shuttle.autoEnabled() &&
+                       fixture.carriage.externalRate() == 450;
   fixture.run.update(false, 26);
   fixture.shuttle.service();
   const bool stopped = !fixture.shuttle.autoEnabled() &&
                        fixture.carriage.currentRate() == 0 &&
                        fixture.chuck.currentRate() == 0;
-  check(stopped_rejected && started && stopped,
-        "Stop-Go cycle gates motion and Stop halts both axes");
+  check(stopped_rejected && started && paused && resumed && stopped,
+        "Stop-Go gates motion, explicit pause-start resumes, and Stop halts both axes");
 }
 
 void testGoAtBootFaults() {
