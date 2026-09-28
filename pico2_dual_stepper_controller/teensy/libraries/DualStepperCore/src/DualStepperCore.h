@@ -449,9 +449,6 @@ class ShuttleController {
     if (run_fault_latched_) {
       return "cycle the run-enable switch through Stop to clear the fault";
     }
-    if (!run_switch_armed_) {
-      return "cycle the run-enable switch through Stop before starting";
-    }
     if (negative_endstop_.pressed() && positive_endstop_.pressed()) {
       pauseForEndstopFault("both_endstops");
       return "both carriage endstops are active";
