@@ -316,7 +316,10 @@ class AxisController {
     } else {
       ramped_rate_ = ramp_target_rate;
     }
-    if (ramped_rate_ > -0.5 && ramped_rate_ < 0.5) {
+    // Preserve sub-step/s acceleration while ramping away from rest. Snapping
+    // every fractional value to zero can permanently stall a fast control loop
+    // whose per-iteration acceleration increment is below 0.5 step/s.
+    if (ramp_target_rate == 0.0 && ramped_rate_ > -0.5 && ramped_rate_ < 0.5) {
       ramped_rate_ = 0.0;
     }
 
@@ -415,8 +418,8 @@ class ShuttleController {
                     DebouncedSwitch& positive_endstop,
                     DebouncedSwitch& run_enable,
                     DebouncedSwitch& manual_index, int32_t carriage_rate,
-                    int32_t chuck_index_steps, int32_t chuck_index_rate,
-                    int chuck_index_direction)
+                    int carriage_start_direction, int32_t chuck_index_steps,
+                    int32_t chuck_index_rate, int chuck_index_direction)
       : carriage_axis_(carriage_axis),
         chuck_axis_(chuck_axis),
         negative_endstop_(negative_endstop),
@@ -424,13 +427,14 @@ class ShuttleController {
         run_enable_(run_enable),
         manual_index_(manual_index),
         carriage_rate_(carriage_rate),
+        carriage_start_direction_(carriage_start_direction >= 0 ? 1 : -1),
         chuck_index_steps_(chuck_index_steps),
         chuck_index_rate_(chuck_index_rate),
         chuck_index_direction_(chuck_index_direction >= 0 ? 1 : -1) {}
 
   void resetFromInputs() {
     auto_enabled_ = false;
-    current_direction_ = 1;
+    current_direction_ = carriage_start_direction_;
     run_switch_armed_ = !run_enable_.pressed();
     run_fault_latched_ = run_enable_.pressed();
     last_reversal_source_ = "startup";
@@ -600,6 +604,7 @@ class ShuttleController {
   DebouncedSwitch& run_enable_;
   DebouncedSwitch& manual_index_;
   int32_t carriage_rate_;
+  int carriage_start_direction_;
   int32_t chuck_index_steps_;
   int32_t chuck_index_rate_;
   int chuck_index_direction_;
