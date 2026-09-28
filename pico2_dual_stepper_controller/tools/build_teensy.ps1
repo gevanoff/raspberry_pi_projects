@@ -30,7 +30,7 @@ if (-not $arduinoCliPath) {
 }
 
 $coreList = & $arduinoCliPath core list --format json | ConvertFrom-Json
-if (-not ($coreList.platforms | Where-Object { $_.id -eq "teensy:avr" -and $_.installed_version })) {
+if (-not ($coreList.platforms | Where-Object { $_.id -eq "teensy:avr" -and $_.installed })) {
     throw "The PJRC teensy:avr core is not installed. See the Teensy setup section in README.md."
 }
 
