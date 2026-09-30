@@ -9,7 +9,7 @@ controller:
 Both targets control:
 
 - two stepper motors through external step/dir drivers such as A4988, DRV8825, or TMC2208/TMC2209 in step/dir mode
-- two rail endstops, one run-enable switch, and one manual chuck-index switch using the Pico's internal pull-ups
+- two rail endstops, one run-enable switch, and one manual chuck-index switch using the selected controller's internal pull-ups
 
 The Pico controller code in `src/` works on both Raspberry Pi Pico and Pico 2
 boards. The Teensy target preserves the same command protocol and safety
@@ -77,12 +77,12 @@ arduino-cli core install teensy:avr@1.62.0
 This build is now tailored for a rail carriage plus rotating chuck:
 
 - motor A drives the carriage belt through the DM542 at a constant rate
-- the switch labeled 13 (GPIO12) is the carriage negative-end endstop
-- the switch labeled 14 (GPIO13) is the carriage positive-end endstop
+- the switch labeled 13 (Pico GPIO12 / Teensy pin 16) is the carriage negative-end endstop
+- the switch labeled 14 (Pico GPIO13 / Teensy pin 17) is the carriage positive-end endstop
 - when the active carriage endstop is reached, motor A reverses direction
 - each carriage reversal also commands motor B to rotate the chuck by a small fixed index amount
-- the switch labeled 11 (GPIO10) is the carriage Stop/Go run-enable control
-- the switch labeled 12 (GPIO11) manually commands one chuck index per close transition
+- the switch labeled 11 (Pico GPIO10 / Teensy pin 14) is the carriage Stop/Go run-enable control
+- the switch labeled 12 (Pico GPIO11 / Teensy pin 15) manually commands one chuck index per close transition
 
 Both axes still use acceleration ramps. The carriage shuttle is disabled on boot. It starts only after the run-enable switch has been observed in Stop and is then switched to Go. This Stop-to-Go interlock prevents an unexpected restart after boot, a controller reset, or an endstop fault.
 
@@ -206,7 +206,7 @@ The default `active_low=True` switch configuration matches normally-open switche
 ## Safety and timing scope
 
 - Treat the software endstops as process controls, not as a safety-rated emergency stop. Use a hard-wired emergency-stop circuit that removes motor power where injury or machine damage is possible.
-- Treat the GPIO10 Stop/Go switch as an operational control, not an emergency stop. Stop removes step commands and disables the drivers, but it does not physically disconnect the motor power supply.
+- Treat the Stop/Go switch (Pico GPIO10 / Teensy pin 14) as an operational control, not an emergency stop. Stop removes step commands and disables the drivers, but it does not physically disconnect the motor power supply.
 - Both targets drive step pulses cooperatively from their main loops. They guarantee the configured minimum pulse width and deliberately skip missed pulses after a long runtime stall instead of emitting a catch-up burst. The current hundreds-of-steps-per-second configuration is appropriate for this design; use dedicated timer/peripheral pulse generation if substantially higher rates or tightly bounded jitter are required.
 - A stop, uncaught exception, or keyboard interrupt drives `STEP` low and disables every axis that was initialized successfully. Hardware should still default driver-enable inputs to the safe state during reset and before MicroPython starts.
 - Configuration is validated before motion starts, including GPIO collisions, axis and endstop references, direction values, positive rates, and pulse-width/rate compatibility.
