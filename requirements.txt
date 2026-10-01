@@ -1,6 +1,10 @@
 # =============================================================================
 # Raspberry Pi runtime dependencies
-# Install these ON the Raspberry Pi:  pip install -r requirements.txt
+# Install pip-managed packages ON the Raspberry Pi with:
+#   python -m pip install -r requirements.txt
+#
+# Raspberry Pi OS system packages such as Picamera2 are installed with apt
+# instead and exposed to project venvs via --system-site-packages.
 # =============================================================================
 
 # GPIO & hardware control
@@ -8,7 +12,9 @@ RPi.GPIO>=0.7.0
 gpiozero>=2.0
 
 # Camera (Raspberry Pi OS Bullseye / Bookworm)
-picamera2>=0.3.19
+# Install Picamera2 from Raspberry Pi OS rather than PyPI:
+#   sudo apt update && sudo apt install -y python3-picamera2
+# A venv created with --system-site-packages can then import picamera2.
 
 # Communication buses
 smbus2>=0.4.3       # I2C
