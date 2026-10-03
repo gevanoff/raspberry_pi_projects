@@ -36,6 +36,8 @@ Accept the default location (`~/.ssh/id_ed25519`) and optionally set a passphras
 
 ## 3. Copy Your Public Key to the Pi
 
+**Linux / macOS:**
+
 ```bash
 ssh-copy-id <username>@raspberrypi.local
 ```
@@ -43,7 +45,15 @@ ssh-copy-id <username>@raspberrypi.local
 Or manually:
 
 ```bash
-cat ~/.ssh/id_ed25519.pub | ssh <username>@raspberrypi.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh <username>@raspberrypi.local "umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys; chmod 700 ~/.ssh; chmod 600 ~/.ssh/authorized_keys"
+```
+
+**Windows PowerShell:**
+
+Windows OpenSSH does not include `ssh-copy-id`. Use the installed `ssh` client to append the public key:
+
+```powershell
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh <username>@raspberrypi.local 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys; chmod 700 ~/.ssh; chmod 600 ~/.ssh/authorized_keys'
 ```
 
 After this, `ssh <username>@raspberrypi.local` should log in without a password.
@@ -127,5 +137,5 @@ Generate a key in PowerShell the same way:
 
 ```powershell
 ssh-keygen -t ed25519 -C "raspberry-pi-dev"
-ssh-copy-id <username>@raspberrypi.local   # requires sshpass; or paste key manually
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh <username>@raspberrypi.local 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys; chmod 700 ~/.ssh; chmod 600 ~/.ssh/authorized_keys'
 ```
