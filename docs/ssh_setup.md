@@ -106,8 +106,8 @@ rsync -avz --exclude '__pycache__' projects/my_project <username>@raspberrypi.lo
 ## 6. Run Commands Remotely
 
 ```bash
-# Single command
-ssh pi "python ~/my_project/main.py"
+# Single command (use the project's virtual environment)
+ssh pi "~/my_project/.venv/bin/python ~/my_project/main.py"
 
 # Interactive session
 ssh pi
