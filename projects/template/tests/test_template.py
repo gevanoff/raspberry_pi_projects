@@ -5,31 +5,72 @@ These tests run on any machine (no Pi hardware required).
 GPIO calls are intercepted by mock_gpio.
 """
 
+import hashlib
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 import pytest
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-
-# Ensure project-local helpers such as mock_gpio are importable.
-sys.path.insert(0, str(PROJECT_DIR))
-
-# Stub out RPi.GPIO before importing main so the mock is used
-import mock_gpio  # noqa: E402
-sys.modules.setdefault("RPi", type(sys)("RPi"))
-sys.modules.setdefault("RPi.GPIO", mock_gpio.GPIO)  # type: ignore[assignment]
+_MODULE_SUFFIX = hashlib.sha1(str(PROJECT_DIR).encode("utf-8")).hexdigest()[:12]
 
 
-def _load_template_main():
-    """Load this template's main.py without colliding with other projects' main modules."""
-    module_name = "raspberry_pi_template_main"
-    spec = importlib.util.spec_from_file_location(module_name, PROJECT_DIR / "main.py")
+def _load_local_module(module_name: str, path: Path):
+    """Load a project-local helper without sharing its import name across copies."""
+    spec = importlib.util.spec_from_file_location(module_name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
+    return module
+
+
+mock_gpio = _load_local_module(
+    f"raspberry_pi_mock_gpio_{_MODULE_SUFFIX}",
+    PROJECT_DIR / "mock_gpio.py",
+)
+
+
+def _gpio_stub_module():
+    """Expose this project's GPIO singleton through an RPi.GPIO-shaped module."""
+    module = types.ModuleType("RPi.GPIO")
+    for name in dir(mock_gpio.GPIO):
+        if not name.startswith("_"):
+            setattr(module, name, getattr(mock_gpio.GPIO, name))
+    return module
+
+
+def _load_template_main():
+    """Load this project's main.py with a temporary, project-local RPi.GPIO stub."""
+    module_name = f"raspberry_pi_template_main_{_MODULE_SUFFIX}"
+    spec = importlib.util.spec_from_file_location(module_name, PROJECT_DIR / "main.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+
+    sentinel = object()
+    previous_rpi = sys.modules.get("RPi", sentinel)
+    previous_gpio = sys.modules.get("RPi.GPIO", sentinel)
+
+    gpio_module = _gpio_stub_module()
+    rpi_module = types.ModuleType("RPi")
+    rpi_module.__path__ = []  # mark it as package-like for the dotted import
+    rpi_module.GPIO = gpio_module
+    sys.modules["RPi"] = rpi_module
+    sys.modules["RPi.GPIO"] = gpio_module
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if previous_gpio is sentinel:
+            sys.modules.pop("RPi.GPIO", None)
+        else:
+            sys.modules["RPi.GPIO"] = previous_gpio
+        if previous_rpi is sentinel:
+            sys.modules.pop("RPi", None)
+        else:
+            sys.modules["RPi"] = previous_rpi
     return module
 
 
