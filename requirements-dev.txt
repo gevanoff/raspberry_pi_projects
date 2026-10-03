@@ -2,7 +2,7 @@
 # Development dependencies — install on your laptop / desktop
 # pip install -r requirements-dev.txt
 #
-# NOTE: GPIO libraries (RPi.GPIO, gpiozero, picamera2, spidev, smbus2) are
+# NOTE: GPIO/hardware libraries (rpi-lgpio, gpiozero, picamera2, spidev, smbus2) are
 # NOT included here because they require Raspberry Pi hardware or kernel
 # modules.  Use the mock helpers in projects/template/mock_gpio.py when
 # writing unit tests on a non-Pi machine.
