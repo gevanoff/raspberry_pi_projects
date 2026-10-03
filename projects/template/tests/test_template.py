@@ -5,18 +5,32 @@ These tests run on any machine (no Pi hardware required).
 GPIO calls are intercepted by mock_gpio.
 """
 
+import importlib.util
 import sys
-import os
+from pathlib import Path
 
 import pytest
 
-# Ensure the project directory is on the path so imports work
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+
+# Ensure project-local helpers such as mock_gpio are importable.
+sys.path.insert(0, str(PROJECT_DIR))
 
 # Stub out RPi.GPIO before importing main so the mock is used
 import mock_gpio  # noqa: E402
 sys.modules.setdefault("RPi", type(sys)("RPi"))
 sys.modules.setdefault("RPi.GPIO", mock_gpio.GPIO)  # type: ignore[assignment]
+
+
+def _load_template_main():
+    """Load this template's main.py without colliding with other projects' main modules."""
+    module_name = "raspberry_pi_template_main"
+    spec = importlib.util.spec_from_file_location(module_name, PROJECT_DIR / "main.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 class TestMockGPIO:
@@ -70,36 +84,31 @@ class TestMainModule:
     """Smoke-test the main module setup/teardown without running the loop."""
 
     def test_setup_and_teardown(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import main
+        main = _load_template_main()
 
         # setup() and teardown() should not raise on any platform
         main.setup()
         main.teardown()
 
     def test_env_defaults(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import importlib
         import dotenv
-        import main
 
         monkeypatch.delenv("LED_PIN", raising=False)
         monkeypatch.delenv("BLINK_INTERVAL", raising=False)
         monkeypatch.setattr(dotenv, "load_dotenv", lambda *args, **kwargs: False)
 
-        # Reload with dotenv loading disabled so a developer's local .env
-        # cannot replace the template defaults under test.
-        importlib.reload(main)
+        # Load the template module under its own name so another project's
+        # cached "main" module cannot affect this test.
+        main = _load_template_main()
 
         assert main.LED_PIN == 17
         assert main.BLINK_INTERVAL == pytest.approx(1.0)
 
     def test_env_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import importlib
-        import main
-
         monkeypatch.setenv("LED_PIN", "27")
         monkeypatch.setenv("BLINK_INTERVAL", "0.5")
 
-        importlib.reload(main)
+        main = _load_template_main()
 
         assert main.LED_PIN == 27
         assert main.BLINK_INTERVAL == pytest.approx(0.5)
