@@ -106,8 +106,7 @@ raspberry_pi_projects/
 
 ```bash
 cp -r projects/template projects/my_new_project
-cd projects/my_new_project
-# Edit main.py and README.md
+# Edit projects/my_new_project/main.py and projects/my_new_project/README.md
 ```
 
 Deploy to the Pi:
