@@ -14,7 +14,7 @@ Each subdirectory here is a self-contained Raspberry Pi project.
 
 3. Write your code in `main.py` (or add additional modules as needed).
 
-4. Add any project-specific Python dependencies to the project's own `requirements.txt`.
+4. Keep the project's own `requirements.txt` self-contained: list every pip-managed runtime dependency imported by that project. The deployment workflow copies only the project directory, so do not rely on repository-root requirements being preinstalled.
 
 ## Project Conventions
 
@@ -47,7 +47,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Raspberry Pi OS Bookworm marks the system Python as externally managed, so project dependencies should be installed in a virtual environment. The `--system-site-packages` option keeps OS-provided GPIO and camera libraries available.
+Raspberry Pi OS Bookworm marks the system Python as externally managed, so project dependencies should be installed in a virtual environment. The `--system-site-packages` option keeps OS-provided camera and other Raspberry Pi packages available. Each project's `requirements.txt` must still contain its own pip-managed runtime dependencies.
 
 ## Running Tests Locally (without a Pi)
 
