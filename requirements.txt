@@ -8,7 +8,9 @@
 # =============================================================================
 
 # GPIO & hardware control
-RPi.GPIO>=0.7.0
+# rpi-lgpio provides the RPi.GPIO-compatible import on modern Raspberry Pi OS
+# and supports Raspberry Pi 5's RP1 GPIO architecture.
+rpi-lgpio>=0.6
 gpiozero>=2.0
 
 # Camera (Raspberry Pi OS Bullseye / Bookworm)
