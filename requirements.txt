@@ -1,6 +1,8 @@
 # =============================================================================
-# Raspberry Pi runtime dependencies
-# Install pip-managed packages ON the Raspberry Pi with:
+# Raspberry Pi runtime dependency catalog for a full-repository Pi environment.
+# Individual projects are deployed independently and must keep their own
+# requirements.txt self-contained; they do not automatically inherit this file.
+# To install this full set on a Pi:
 #   python -m pip install -r requirements.txt
 #
 # Raspberry Pi OS system packages such as Picamera2 are installed with apt
