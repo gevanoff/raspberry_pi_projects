@@ -1,9 +1,9 @@
-# Project-specific Pi runtime dependencies
-# Add libraries needed only by THIS project.
-# Run `pip install -r requirements.txt` on the Raspberry Pi.
+# Self-contained Pi runtime dependencies for this project.
+# Add every library imported by this project here; deployment copies only the
+# project directory, so do not rely on the repository-root requirements.txt.
+# Run `python -m pip install -r requirements.txt` on the Raspberry Pi.
 
-# Inherited from root requirements.txt (already installed on Pi)
-# Remove any lines here that are already in the root requirements.txt
-# to avoid version conflicts.
+# RPi.GPIO-compatible implementation with Raspberry Pi 5 support.
+rpi-lgpio>=0.6
 
 python-dotenv>=1.0.0
