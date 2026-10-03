@@ -127,7 +127,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The `--system-site-packages` option keeps OS-provided Raspberry Pi packages such as GPIO/camera libraries visible inside the project environment.
+The `--system-site-packages` option keeps OS-provided Raspberry Pi packages such as Picamera2 visible inside the project environment. Pip-managed runtime dependencies—including the Pi 5-compatible `rpi-lgpio` package used by the template—belong in each project's own self-contained `requirements.txt`.
 
 ---
 
