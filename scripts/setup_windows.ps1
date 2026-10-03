@@ -94,14 +94,23 @@ if (-not $NoVenv) {
     } else {
         Write-Step "Creating Python virtual environment at $venvDir…"
         python -m venv $venvDir
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "Virtual environment creation failed with exit code $LASTEXITCODE."
+        }
         Write-Ok "Virtual environment created."
     }
 
     Write-Step "Upgrading pip…"
     & "$venvDir\Scripts\pip.exe" install --upgrade pip setuptools wheel | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "pip upgrade failed with exit code $LASTEXITCODE."
+    }
 
     Write-Step "Installing development dependencies…"
     & "$venvDir\Scripts\pip.exe" install -r "$RepoRoot\requirements-dev.txt"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "Dependency installation failed with exit code $LASTEXITCODE."
+    }
     Write-Ok "Dependencies installed."
 }
 
